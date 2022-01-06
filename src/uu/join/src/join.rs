@@ -812,6 +812,7 @@ fn get_field_number(keys: Option<usize>, key: Option<usize>) -> UResult<usize> {
 fn parse_field_number(value: &str) -> UResult<usize> {
     match value.parse::<usize>() {
         Ok(result) if result > 0 => Ok(result - 1),
+        Err(e) if *e.kind() == std::num::IntErrorKind::PosOverflow => Ok(usize::MAX),
         _ => Err(USimpleError::new(
             1,
             format!("invalid field number: {}", value.quote()),
