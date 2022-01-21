@@ -1,6 +1,10 @@
 // spell-checker:ignore (words) autoformat
 
 use crate::common::util::*;
+#[cfg(unix)]
+use std::ffi::OsStr;
+#[cfg(unix)]
+use std::os::unix::ffi::OsStrExt;
 
 #[test]
 fn empty_files() {
@@ -350,6 +354,18 @@ fn non_unicode() {
         .arg("non-unicode_2.bin")
         .succeeds()
         .stdout_only_fixture("non-unicode.expected");
+
+    #[cfg(unix)]
+    {
+        let invalid_utf8: u8 = 167;
+        new_ucmd!()
+            .arg("-t")
+            .arg(OsStr::from_bytes(&[invalid_utf8]))
+            .arg("non-unicode_1.bin")
+            .arg("non-unicode_2.bin")
+            .succeeds()
+            .stdout_only_fixture("non-unicode_sep.expected");
+    }
 }
 
 #[test]
