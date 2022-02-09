@@ -4,7 +4,7 @@ use super::*;
 
 use crate::StatusLevel;
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 #[test]
 fn unimplemented_flags_should_error_non_linux() {
     let mut succeeded = Vec::new();
@@ -563,7 +563,7 @@ fn parse_oflag_tokens() {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn parse_iflag_tokens_linux() {
     let exp = vec![
@@ -591,7 +591,7 @@ fn parse_iflag_tokens_linux() {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn parse_oflag_tokens_linux() {
     let exp = vec![

@@ -878,7 +878,7 @@ fn sort_empty_chunk() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_compress() {
     new_ucmd!()
         .args(&[
@@ -894,7 +894,7 @@ fn test_compress() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_compress_merge() {
     new_ucmd!()
         .args(&[

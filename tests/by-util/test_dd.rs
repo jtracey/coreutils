@@ -32,7 +32,7 @@ macro_rules! assert_fixture_exists {
     }};
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 macro_rules! assert_fixture_not_exists {
     ($fname:expr) => {{
         let fpath = PathBuf::from(format!("./fixtures/dd/{}", $fname));
@@ -254,7 +254,7 @@ fn test_final_stats_unspec() {
     new_ucmd!().run().stderr_only(&output).success();
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_excl_causes_failure_when_present() {
     let fname = "this-file-exists-excl.txt";
@@ -265,7 +265,7 @@ fn test_excl_causes_failure_when_present() {
         .fails();
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_noatime_does_not_update_infile_atime() {
     // NOTE: Not all environments support tracking access time. If this
@@ -285,7 +285,7 @@ fn test_noatime_does_not_update_infile_atime() {
     assert_eq!(pre_atime, post_atime);
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_noatime_does_not_update_ofile_atime() {
     // NOTE: Not all environments support tracking access time. If this
@@ -305,7 +305,7 @@ fn test_noatime_does_not_update_ofile_atime() {
     assert_eq!(pre_atime, post_atime);
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_nocreat_causes_failure_when_outfile_not_present() {
     let fname = "this-file-does-not-exist.txt";

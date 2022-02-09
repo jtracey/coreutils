@@ -113,14 +113,14 @@ fn test_invalid_option() {
 #[cfg(unix)]
 const NORMAL_FORMAT_STR: &str =
     "%a %A %b %B %d %D %f %F %g %G %h %i %m %n %o %s %u %U %x %X %y %Y %z %Z"; // avoid "%w %W" (birth/creation) due to `stat` limitations and linux kernel & rust version capability variations
-#[cfg(any(target_os = "linux"))]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 const DEV_FORMAT_STR: &str =
     "%a %A %b %B %d %D %f %F %g %G %h %i %m %n %o %s (%t/%T) %u %U %w %W %x %X %y %Y %z %Z";
 #[cfg(target_os = "linux")]
 const FS_FORMAT_STR: &str = "%b %c %i %l %n %s %S %t %T"; // avoid "%a %d %f" which can cause test failure due to race conditions
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_terse_fs_format() {
     let args = ["-f", "-t", "/proc"];
     let ts = TestScenario::new(util_name!());
@@ -242,6 +242,7 @@ fn test_symlinks() {
         "/usr/bin/ex",
         "/etc/localtime",
         "/etc/aliases",
+        "/sdcard",
     ] {
         if at.file_exists(file) && at.is_symlink(file) {
             tested = true;
@@ -259,7 +260,7 @@ fn test_symlinks() {
     }
 }
 
-#[cfg(any(target_os = "linux", target_vendor = "apple"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_vendor = "apple"))]
 #[test]
 fn test_char() {
     // TODO: "(%t) (%x) (%w)" deviate from GNU stat for `character special file` on macOS
@@ -268,13 +269,13 @@ fn test_char() {
     // >"(f) (2021-05-20 23:08:03.455598000 +0200) (-)\n"
     let args = [
         "-c",
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         DEV_FORMAT_STR,
         #[cfg(target_os = "linux")]
         "/dev/pts/ptmx",
         #[cfg(any(target_vendor = "apple"))]
         "%a %A %b %B %d %D %f %F %g %G %h %i %m %n %o %s (/%T) %u %U %W %X %y %Y %z %Z",
-        #[cfg(any(target_vendor = "apple"))]
+        #[cfg(any(target_os = "android", target_vendor = "apple"))]
         "/dev/ptmx",
     ];
     let ts = TestScenario::new(util_name!());

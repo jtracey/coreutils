@@ -82,6 +82,7 @@ struct ProgramOptionsError(String);
 
 #[cfg(any(
     target_os = "linux",
+    target_os = "android",
     target_os = "freebsd",
     target_os = "netbsd",
     target_os = "dragonflybsd"
@@ -97,6 +98,7 @@ fn preload_strings() -> (&'static str, &'static str) {
 
 #[cfg(not(any(
     target_os = "linux",
+    target_os = "android",
     target_os = "freebsd",
     target_os = "netbsd",
     target_os = "dragonflybsd",

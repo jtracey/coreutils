@@ -145,6 +145,11 @@ feat_os_unix_musl = [
     #
     "feat_require_unix",
 ]
+feat_os_unix_android = [
+    "feat_Tier1",
+    #
+    "feat_require_unix",
+]
 # "feat_selinux" == set of utilities providing support for SELinux Security Context if enabled with `--features feat_selinux`.
 # NOTE:
 # The selinux(-sys) crate requires `libselinux` headers and shared library to be accessible in the C toolchain at compile time.
@@ -170,7 +175,6 @@ feat_require_unix = [
     "chown",
     "chroot",
     "groups",
-    "hostid",
     "id",
     "install",
     "kill",
@@ -192,6 +196,10 @@ feat_require_unix_utmpx = [
     "uptime",
     "users",
     "who",
+]
+# "feat_require_hostid" == set of utilities requiring gethostid in libc (only some unixes provide)
+feat_require_hostid = [
+    "hostid",
 ]
 # "feat_require_selinux" == set of utilities depending on SELinux.
 feat_require_selinux = [
@@ -381,8 +389,8 @@ walkdir = "2.2"
 atty = "0.2"
 hex-literal = "0.3.1"
 
-[target.'cfg(target_os = "linux")'.dev-dependencies]
-rlimit = "0.4.0"
+[target.'cfg(any(target_os = "linux", target_os = "android"))'.dev-dependencies]
+rlimit = "0.7.0"
 
 [target.'cfg(unix)'.dev-dependencies]
 nix = "0.23.1"

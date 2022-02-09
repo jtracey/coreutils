@@ -14,15 +14,15 @@ use std::os::unix::fs::PermissionsExt;
 #[cfg(windows)]
 use std::os::windows::fs::symlink_file;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use filetime::FileTime;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use rlimit::Resource;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::fs as std_fs;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::thread::sleep;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::time::Duration;
 
 static TEST_EXISTING_FILE: &str = "existing_file.txt";
@@ -37,11 +37,11 @@ static TEST_COPY_FROM_FOLDER: &str = "hello_dir_with_file/";
 static TEST_COPY_FROM_FOLDER_FILE: &str = "hello_dir_with_file/hello_world.txt";
 static TEST_COPY_TO_FOLDER_NEW: &str = "hello_dir_new";
 static TEST_COPY_TO_FOLDER_NEW_FILE: &str = "hello_dir_new/hello_world.txt";
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
 static TEST_MOUNT_COPY_FROM_FOLDER: &str = "dir_with_mount";
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
 static TEST_MOUNT_MOUNTPOINT: &str = "mount";
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
 static TEST_MOUNT_OTHER_FILESYSTEM_FILE: &str = "mount/DO_NOT_copy_me.txt";
 #[cfg(unix)]
 static TEST_NONEXISTENT_FILE: &str = "nonexistent_file.txt";
@@ -194,8 +194,11 @@ fn test_cp_arg_interactive() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_arg_link() {
+    #[cfg(target_os = "android")]
+    use std::os::android::fs::MetadataExt;
+    #[cfg(target_os = "linux")]
     use std::os::linux::fs::MetadataExt;
 
     let (at, mut ucmd) = at_and_ucmd!();
@@ -973,7 +976,7 @@ fn test_cp_no_deref_folder_to_folder() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_archive() {
     let (at, mut ucmd) = at_and_ucmd!();
     let ts = time::now().to_timespec();
@@ -1076,7 +1079,7 @@ fn test_cp_archive_recursive() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_preserve_timestamps() {
     let (at, mut ucmd) = at_and_ucmd!();
     let ts = time::now().to_timespec();
@@ -1109,7 +1112,7 @@ fn test_cp_preserve_timestamps() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_no_preserve_timestamps() {
     let (at, mut ucmd) = at_and_ucmd!();
     let ts = time::now().to_timespec();
@@ -1150,7 +1153,7 @@ fn test_cp_no_preserve_timestamps() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_target_file_dev_null() {
     let (at, mut ucmd) = at_and_ucmd!();
     let file1 = "/dev/null";
@@ -1163,7 +1166,7 @@ fn test_cp_target_file_dev_null() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
 fn test_cp_one_file_system() {
     use crate::common::util::AtPath;
     use walkdir::WalkDir;
@@ -1227,7 +1230,7 @@ fn test_cp_one_file_system() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "macos"))]
 fn test_cp_reflink_always() {
     let (at, mut ucmd) = at_and_ucmd!();
     let result = ucmd
@@ -1245,7 +1248,7 @@ fn test_cp_reflink_always() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "macos"))]
 fn test_cp_reflink_auto() {
     let (at, mut ucmd) = at_and_ucmd!();
     ucmd.arg("--reflink=auto")
@@ -1258,7 +1261,7 @@ fn test_cp_reflink_auto() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "macos"))]
 fn test_cp_reflink_never() {
     let (at, mut ucmd) = at_and_ucmd!();
     ucmd.arg("--reflink=never")
@@ -1271,7 +1274,7 @@ fn test_cp_reflink_never() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "macos"))]
 fn test_cp_reflink_bad() {
     let (_, mut ucmd) = at_and_ucmd!();
     let _result = ucmd
@@ -1283,7 +1286,7 @@ fn test_cp_reflink_bad() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn test_cp_reflink_insufficient_permission() {
     let (at, mut ucmd) = at_and_ucmd!();
 
@@ -1299,7 +1302,7 @@ fn test_cp_reflink_insufficient_permission() {
         .stderr_only("cp: 'unreadable' -> 'existing_file.txt': Permission denied (os error 13)");
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 #[test]
 fn test_closes_file_descriptors() {
     new_ucmd!()

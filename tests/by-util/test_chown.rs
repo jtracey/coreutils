@@ -1,7 +1,7 @@
 // spell-checker:ignore (words) agroupthatdoesntexist auserthatdoesntexist cuuser groupname notexisting passgrp
 
 use crate::common::util::*;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use rust_users::get_effective_uid;
 
 extern crate chown;

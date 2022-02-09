@@ -9,7 +9,7 @@
 
 use pretty_assertions::assert_eq;
 #[cfg(target_os = "linux")]
-use rlimit::{prlimit, rlim};
+use rlimit::prlimit;
 #[cfg(unix)]
 use std::borrow::Cow;
 use std::env;
@@ -887,8 +887,8 @@ pub struct UCommand {
     stdout: Option<Stdio>,
     stderr: Option<Stdio>,
     bytes_into_stdin: Option<Vec<u8>>,
-    #[cfg(target_os = "linux")]
-    limits: Vec<(rlimit::Resource, rlim, rlim)>,
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    limits: Vec<(rlimit::Resource, u64, u64)>,
 }
 
 impl UCommand {
@@ -933,7 +933,7 @@ impl UCommand {
             stdin: None,
             stdout: None,
             stderr: None,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "android"))]
             limits: vec![],
         };
 
@@ -1037,12 +1037,12 @@ impl UCommand {
         self
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn with_limit(
         &mut self,
         resource: rlimit::Resource,
-        soft_limit: rlim,
-        hard_limit: rlim,
+        soft_limit: u64,
+        hard_limit: u64,
     ) -> &mut Self {
         self.limits.push((resource, soft_limit, hard_limit));
         self

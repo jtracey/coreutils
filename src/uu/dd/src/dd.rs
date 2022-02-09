@@ -19,15 +19,15 @@ use conversion_tables::*;
 use std::cmp;
 use std::convert::TryInto;
 use std::env;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::error::Error;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, Write};
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 use std::sync::mpsc;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::sync::{atomic::AtomicUsize, atomic::Ordering, Arc};
 use std::thread;
 use std::time;
@@ -35,7 +35,7 @@ use std::time;
 use byte_unit::Byte;
 use clap::{crate_version, App, AppSettings, Arg, ArgMatches};
 use gcd::Gcd;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use signal_hook::consts::signal;
 use uucore::display::Quotable;
 use uucore::error::{FromIo, UResult, USimpleError};
@@ -90,7 +90,7 @@ impl Input<io::Stdin> {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn make_linux_iflags(iflags: &IFlags) -> Option<libc::c_int> {
     let mut flag = 0;
 
@@ -141,7 +141,7 @@ impl Input<File> {
                 let mut opts = OpenOptions::new();
                 opts.read(true);
 
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "android"))]
                 if let Some(libc_flags) = make_linux_iflags(&iflags) {
                     opts.custom_flags(libc_flags);
                 }
@@ -456,7 +456,7 @@ where
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn make_linux_oflags(oflags: &OFlags) -> Option<libc::c_int> {
     let mut flag = 0;
 
@@ -505,7 +505,7 @@ impl OutputTrait for Output<File> {
                 .create_new(cflags.excl)
                 .append(oflags.append);
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "android"))]
             if let Some(libc_flags) = make_linux_oflags(oflags) {
                 opts.custom_flags(libc_flags);
             }
@@ -826,18 +826,18 @@ fn print_transfer_stats(update: &ProgUpdate) {
 
 // Generate a progress updater that tracks progress, receives updates, and responds to progress update requests (signals).
 // Signals:
-// - SIGUSR1: Trigger progress line reprint. Linux (GNU & BSD) only.
+// - SIGUSR1: Trigger progress line reprint. Linux (GNU, BSD, & Android) only.
 // - TODO: SIGINFO: Trigger progress line reprint. BSD-style Linux only.
 fn gen_prog_updater(rx: mpsc::Receiver<ProgUpdate>, print_level: Option<StatusLevel>) -> impl Fn() {
     // --------------------------------------------------------------
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     const SIGUSR1_USIZE: usize = signal::SIGUSR1 as usize;
     // --------------------------------------------------------------
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     fn posixly_correct() -> bool {
         env::var("POSIXLY_CORRECT").is_ok()
     }
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     fn register_linux_signal_handler(sigval: Arc<AtomicUsize>) -> Result<(), Box<dyn Error>> {
         if !posixly_correct() {
             signal_hook::flag::register_usize(signal::SIGUSR1, sigval, SIGUSR1_USIZE)?;
@@ -847,10 +847,10 @@ fn gen_prog_updater(rx: mpsc::Receiver<ProgUpdate>, print_level: Option<StatusLe
     }
     // --------------------------------------------------------------
     move || {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         let sigval = Arc::new(AtomicUsize::new(0));
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         register_linux_signal_handler(sigval.clone()).unwrap_or_else(|e| {
             if Some(StatusLevel::None) != print_level {
                 eprintln!(
@@ -870,7 +870,7 @@ fn gen_prog_updater(rx: mpsc::Receiver<ProgUpdate>, print_level: Option<StatusLe
                 progress_as_secs = update.duration.as_secs() + 1;
             }
             // Handle signals
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "android"))]
             if let SIGUSR1_USIZE = sigval.load(Ordering::Relaxed) {
                 print_transfer_stats(&update);
             };

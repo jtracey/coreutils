@@ -12,7 +12,7 @@ use std::env;
 use uucore::display::Quotable;
 use uucore::error::{UResult, USimpleError};
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub const _SC_NPROCESSORS_CONF: libc::c_int = 83;
 #[cfg(target_vendor = "apple")]
 pub const _SC_NPROCESSORS_CONF: libc::c_int = libc::_SC_NPROCESSORS_CONF;
