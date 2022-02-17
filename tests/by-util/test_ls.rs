@@ -1326,9 +1326,9 @@ fn test_ls_order_time() {
         at.open("test-4").metadata().unwrap().accessed().unwrap();
 
         // It seems to be dependent on the platform whether the access time is actually set
-        #[cfg(unix)]
+        #[cfg(all(unix, not(target_os = "android")))]
         result.stdout_only("test-3\ntest-4\ntest-2\ntest-1\n");
-        #[cfg(windows)]
+        #[cfg(any(windows, target_os = "android"))]
         result.stdout_only("test-4\ntest-3\ntest-2\ntest-1\n");
     }
 

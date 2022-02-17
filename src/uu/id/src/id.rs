@@ -513,15 +513,15 @@ fn pline(possible_uid: Option<uid_t>) {
     println!(
         "{}:{}:{}:{}:{}:{}:{}:{}:{}:{}",
         pw.name,
-        pw.user_passwd,
+        pw.user_passwd.unwrap_or_else(String::new),
         pw.uid,
         pw.gid,
-        pw.user_access_class,
+        pw.user_access_class.unwrap_or_else(String::new),
         pw.passwd_change_time,
         pw.expiration,
-        pw.user_info,
-        pw.user_dir,
-        pw.user_shell
+        pw.user_info.unwrap_or_else(String::new),
+        pw.user_dir.unwrap_or_else(String::new),
+        pw.user_shell.unwrap_or_else(String::new)
     );
 }
 
@@ -532,7 +532,13 @@ fn pline(possible_uid: Option<uid_t>) {
 
     println!(
         "{}:{}:{}:{}:{}:{}:{}",
-        pw.name, pw.user_passwd, pw.uid, pw.gid, pw.user_info, pw.user_dir, pw.user_shell
+        pw.name,
+        pw.user_passwd.unwrap_or_else(String::new),
+        pw.uid,
+        pw.gid,
+        pw.user_info.unwrap_or_else(String::new),
+        pw.user_dir.unwrap_or_else(String::new),
+        pw.user_shell.unwrap_or_else(String::new)
     );
 }
 
