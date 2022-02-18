@@ -273,7 +273,7 @@ impl Pinky {
             if let Ok(pw) = Passwd::locate(ut.user().as_ref()) {
                 let mut gecos = pw.user_info;
                 if let Some(n) = gecos.find(',') {
-                    gecos.truncate(n + 1);
+                    gecos.truncate(n);
                 }
                 print!(" {:<19.19}", gecos.replace('&', &pw.name.capitalize()));
             } else {
