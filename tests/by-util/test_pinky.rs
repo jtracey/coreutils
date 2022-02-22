@@ -44,7 +44,10 @@ fn test_long_format() {
 #[cfg(unix)]
 #[test]
 fn test_long_format_multiple_users() {
-    let args = ["-l", "root", "root", "root"];
+    // multiple instances of one account we know exists,
+    // the account of the GH runner,
+    // and an account that (probably) doesn't exist
+    let args = ["-l", "root", "root", "root", "runner", "no_such_user"];
     let ts = TestScenario::new(util_name!());
     let expect = unwrap_or_return!(expected_result(&ts, &args));
 
