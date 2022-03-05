@@ -66,7 +66,7 @@ jobs:
           macos-latest) brew install coreutils ;; # needed for testing
         esac
         case '${{ matrix.job.os }}' in
-          *linux*)
+          ubuntu-latest)
             # pinky is a tool to show logged-in users from utmp, and gecos fields from /etc/passwd.
             # In GitHub Action *nix VMs, no accounts log in, even the "runner" account that runs the commands. The account also has empty gecos fields.
             # To work around this for pinky tests, we create a fake login entry for the GH runner account...
