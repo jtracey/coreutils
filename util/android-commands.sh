@@ -31,6 +31,8 @@ where COMMAND is one of:
                 device, then pull the output as build.log
   tests         run \`cargo test --features feat_os_unix_android\` on the
                 device, then pull the output as tests.log
+  coverage      run the \`instrumented-coverage.sh\` script on the device, then
+                pull the results as tests.log and lcov.info
 
 If you have multiple devices, use the ANDROID_SERIAL environment variable to
 specify which to connect to."
@@ -73,7 +75,7 @@ snapshot () {
     echo "running snapshot"
     adb install -g "$apk"
     probe='/sdcard/pkg.probe'
-    command="'yes | pkg install rust binutils openssl -y; touch $probe'"
+    command="'yes | pkg install rust binutils openssl jq -y; touch $probe'"
     run_termux_command "$command" "$probe"
     echo "snapshot complete"
     adb shell input text "exit" && hit_enter && hit_enter
@@ -86,7 +88,7 @@ sync () {
     symlinks=$(find "$repo" -type l)
     # dash doesn't support process substitution :(
     echo $symlinks | sort >symlinks
-    git -C "$repo" diff --name-status | cut -f 2 >modified
+    git -C "$repo" diff --name-status | cut -f 2 | sort >modified
     modified_links=$(join symlinks modified)
     if [ ! -z "$modified_links" ]; then
         echo "You have modified symlinks. Either stash or commit them, then try again: $modified_links"
@@ -127,6 +129,20 @@ tests () {
     return $return_code
 }
 
+coverage () {
+    probe='/sdcard/coverage.probe'
+    command="'cd ~/coreutils && cargo clean && chmod a+x ./util/instrumented-coverage.sh && ./util/instrumented-coverage.sh feat_os_unix_android 2>/sdcard/invoke.log; echo \$? > temp.probe; mv tests.json /sdcard/.; mv profiles/lcov.info /sdcard/.; mv temp.probe $probe'"
+    echo "running coverage"
+    run_termux_command "$command" "$probe"
+    return_code=$?
+    adb pull /sdcard/invoke.log .
+    cat invoke.log
+    adb pull /sdcard/tests.json .
+    cat tests.json
+    adb pull /sdcard/lcov.info .
+    return $return_code
+}
+
 #adb logcat &
 exit_code=0
 
@@ -135,6 +151,7 @@ if [ $# -eq 1 ]; then
         sync)     sync "$this_repo"; exit_code=$?;;
         build)    build; exit_code=$?;;
         tests)    tests; exit_code=$?;;
+        coverage) coverage; exit_code=$?;;
         *)        help;;
     esac
 elif [ $# -eq 2 ]; then

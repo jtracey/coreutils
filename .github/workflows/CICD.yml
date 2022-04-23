@@ -845,7 +845,7 @@ jobs:
         if [ $n_fails -gt 0 ] ; then echo "::warning ::${n_fails}+ test failures" ; fi
 
   test_android:
-    name: Test Android builds
+    name: Tests/Android test suite
     needs: [ min_version, deps ]
     runs-on: macos-latest
     strategy:
@@ -866,7 +866,8 @@ jobs:
           ~/.android/avd/*
           ~/.android/avd/*/snapshots/*
           ~/.android/adb*
-        key: avd-${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}
+        # if you change this, make sure you change it in android_coverage too
+        key: avd-${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}-v2
     - name: Create and cache emulator image
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
@@ -1107,5 +1108,50 @@ jobs:
         file: ${{ steps.coverage.outputs.report }}
         ## flags: IntegrationTests, UnitTests, ${{ steps.vars.outputs.CODECOV_FLAGS }}
         flags: ${{ steps.vars.outputs.CODECOV_FLAGS }}
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  android_coverage:
+    name: Android Code Coverage
+    needs: test_android
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        api-level: [28]
+        target: [default]
+        arch: [x86] # , arm64-v8a
+    env:
+      TERMUX: v0.118.0
+    steps:
+    - uses: actions/checkout@v2
+    - name: AVD cache
+      uses: actions/cache@v2
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/avd/*/snapshots/*
+          ~/.android/adb*
+        # if you change this, make sure you change it in test_android too
+        key: avd-${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}-v2
+    - name: Test and generate coverage files
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ matrix.api-level }}
+        target: ${{ matrix.target }}
+        arch: ${{ matrix.arch }}
+        ram-size: 2048M
+        disk-size: 5120M
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -snapshot ${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}
+        script: |
+          util/android-commands.sh sync
+          util/android-commands.sh coverage
+    - name: Upload coverage results (to Codecov.io)
+      uses: codecov/codecov-action@v1
+      with:
+        file: lcov.info
+        flags: android
         name: codecov-umbrella
         fail_ci_if_error: false
