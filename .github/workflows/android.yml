@@ -65,7 +65,7 @@ jobs:
         ram-size: 2048M
         disk-size: 5120M
         force-avd-creation: false
-        emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -snapshot ${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}
+        emulator-options: -no-snapshot-save -noaudio -no-boot-anim -camera-back none -snapshot ${{ matrix.api-level }}-${{ matrix.arch }}+termux-${{ env.TERMUX }}
         script: |
           util/android-commands.sh sync
           util/android-commands.sh build
