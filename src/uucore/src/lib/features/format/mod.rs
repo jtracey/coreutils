@@ -225,6 +225,15 @@ pub fn parse_escape_only(fmt: &[u8]) -> impl Iterator<Item = EscapedChar> + '_ {
     })
 }
 
+/// Parse a format string containing escape sequences into a vector.
+pub fn parse_escape_to_vec(val: &str) -> Result<Vec<u8>, FormatError> {
+    let mut ret = Vec::new();
+    for item in parse_escape_only(val.as_bytes()) {
+        item.write(&mut ret)?;
+    }
+    Ok(ret)
+}
+
 /// Write a formatted string to stdout.
 ///
 /// `format_string` contains the template and `args` contains the

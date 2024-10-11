@@ -93,3 +93,8 @@ also provides a `-v`/`--verbose` flag.
 ## `uptime`
 
 Similar to the proc-ps implementation and unlike GNU/Coreutils, `uptime` provides `-s`/`--since` to show since when the system is up.
+
+## `join`
+
+GNU's `join` allows any single byte or any single printable character as the separator via `-t`.
+We relax these restrictions and simplify non-printable separators via `--@t`, which parses `printf`-style escape sequences, but not %-style arguments.

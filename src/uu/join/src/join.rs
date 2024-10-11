@@ -19,6 +19,7 @@ use std::num::IntErrorKind;
 use std::os::unix::ffi::OsStrExt;
 use uucore::display::Quotable;
 use uucore::error::{set_exit_code, FromIo, UError, UResult, USimpleError};
+use uucore::format::parse_escape_to_vec;
 use uucore::line_ending::LineEnding;
 use uucore::{crash_if_err, format_usage, help_about, help_usage};
 
@@ -709,6 +710,14 @@ impl<'a> State<'a> {
     }
 }
 
+fn parse_separator_bytes(value: &[u8]) -> SepSetting {
+    match value {
+        [] => SepSetting::Line,
+        [b] => SepSetting::Byte(*b),
+        v => SepSetting::Char(v.into()),
+    }
+}
+
 fn parse_separator(value_os: &OsString) -> UResult<SepSetting> {
     // Five possible separator values:
     // No argument supplied, separate on whitespace; handled implicitly as the default elsewhere
@@ -802,6 +811,8 @@ fn parse_settings(matches: &clap::ArgMatches) -> UResult<Settings> {
     settings.key2 = get_field_number(keys, key2)?;
     if let Some(value_os) = matches.get_one::<OsString>("t") {
         settings.separator = parse_separator(value_os)?;
+    } else if let Some(value_bytes) = matches.get_one::<Vec<u8>>("@t") {
+        settings.separator = parse_separator_bytes(value_bytes);
     }
     if let Some(format) = matches.get_one::<String>("o") {
         if format == "auto" {
@@ -923,6 +934,14 @@ FILENUM is 1 or 2, corresponding to FILE1 or FILE2",
                 .value_name("CHAR")
                 .value_parser(ValueParser::os_string())
                 .help("use CHAR as input and output field separator"),
+        )
+        .arg(
+            Arg::new("@t")
+                .conflicts_with("t")
+                .long("@t")
+                .value_name("CHAR")
+                .value_parser(parse_escape_to_vec)
+                .help("same as -t, but with printf-style escape sequences, and multi-character support"),
         )
         .arg(
             Arg::new("1")
