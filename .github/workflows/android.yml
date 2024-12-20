@@ -178,15 +178,13 @@ jobs:
           util/android-commands.sh sync_host
           util/android-commands.sh build
           util/android-commands.sh tests
+          if [ "${{steps.rust-cache.outputs.cache-hit}}" != 'true' ]; then util/android-commands.sh sync_image ; fi
     - name: Collect information about runner resources
       if: always()
       continue-on-error: true
       run: |
         free -mh
         df -Th
-    - name: Pull rust cache from device
-      if: steps.rust-cache.outputs.cache-hit != 'true'
-      run: util/android-commands.sh sync_image
     - name: Save rust cache
       if: steps.rust-cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
