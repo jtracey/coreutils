@@ -787,7 +787,7 @@ jobs:
         ls './target/${{ matrix.job.target }}/release/'
         LD_LIBRARY_PATH='./target/${{ matrix.job.target }}/release/:'"$LD_LIBRARY_PATH"
         DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-        cp './target/${{ matrix.job.target }}/release/'coreutils.* .
+        cp './target/${{ matrix.job.target }}/release/'libcoreutils.* .
         ./coreutils-dyn
     - name: Test
       if: matrix.job.skip-tests != true
