@@ -784,8 +784,10 @@ jobs:
       if: matrix.job.dyn == true && matrix.job.skip-tests != true
       shell: bash
       run: |
+        ls './target/${{ matrix.job.target }}/release/'
         LD_LIBRARY_PATH='./target/${{ matrix.job.target }}/release/:'"$LD_LIBRARY_PATH"
         DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+        cp './target/${{ matrix.job.target }}/release/'coreutils.* .
         ./coreutils-dyn
     - name: Test
       if: matrix.job.skip-tests != true
