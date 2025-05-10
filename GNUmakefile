@@ -1,10 +1,11 @@
-# spell-checker:ignore (misc) testsuite runtest findstring (targets) busytest toybox distclean pkgs nextest ; (vars/env) BINDIR BUILDDIR CARGOFLAGS DESTDIR DOCSDIR INSTALLDIR INSTALLEES MULTICALL DATAROOTDIR TESTDIR manpages
+# spell-checker:ignore (misc) testsuite runtest findstring libcoreutils dylib (targets) busytest toybox distclean pkgs nextest ; (vars/env) BINDIR BUILDDIR CARGOFLAGS DESTDIR DOCSDIR INSTALLDIR INSTALLEES MULTICALL DATAROOTDIR TESTDIR manpages
 
 # Config options
 ifneq (,$(filter install, $(MAKECMDGOALS)))
  PROFILE?=release
 endif
 PROFILE         ?= debug
+DYNAMIC         ?= n
 MULTICALL       ?= n
 COMPLETIONS     ?= y
 MANPAGES        ?= y
@@ -33,12 +34,14 @@ PROG_PREFIX ?=
 PREFIX ?= /usr/local
 DESTDIR ?=
 BINDIR ?= $(PREFIX)/bin
+LIBDIR ?= $(PREFIX)/lib
 DATAROOTDIR ?= $(PREFIX)/share
 LIBSTDBUF_DIR ?= $(PREFIX)/libexec/$(PROG_PREFIX)coreutils
 # Export variable so that it is used during the build
 export LIBSTDBUF_DIR
 
 INSTALLDIR_BIN=$(DESTDIR)$(BINDIR)
+INSTALLDIR_LIB=$(DESTDIR)$(LIBDIR)
 
 # This won't support any directory with spaces in its name, but you can just
 # make a symlink without spaces that points to the directory.
@@ -152,13 +155,18 @@ else
 endif
 endif
 
+build-lib:
+ifeq (${DYNAMIC}, y)
+	${CARGO} rustc ${CARGOFLAGS} --features "${EXES} $(BUILD_SPEC_FEATURE)" ${PROFILE_CMD} --crate-type dylib --lib
+endif
+
 build-coreutils:
 	${CARGO} build ${CARGOFLAGS} --features "${EXES} $(BUILD_SPEC_FEATURE)" ${PROFILE_CMD} --no-default-features
 
 ifeq (${MULTICALL}, y)
-build: build-coreutils locales
+build: build-coreutils build-lib locales
 else
-build: build-pkgs locales
+build: build-pkgs build-lib locales
 endif
 
 $(foreach test,$(UTILS),$(eval $(call TEST_BUSYBOX,$(test))))
@@ -284,6 +292,11 @@ locales:
 install-locales:
 endif
 
+install-lib:
+ifeq (${DYNAMIC}, y)
+	$(INSTALL) $(BUILDDIR)/$(LIBNAME) $(INSTALLDIR_LIB)/
+endif
+
 install: build install-manpages install-completions install-locales
 	mkdir -p $(INSTALLDIR_BIN)
 ifneq (,$(and $(findstring stdbuf,$(UTILS)),$(findstring feat_external_libstdbuf,$(CARGOFLAGS))))
@@ -314,6 +327,9 @@ ifeq (,$(findstring MINGW,$(OS)))
 endif
 ifeq (${MULTICALL}, y)
 	rm -f $(addprefix $(INSTALLDIR_BIN)/,$(PROG_PREFIX)coreutils)
+endif
+ifeq (${DYNAMIC}, y)
+	rm -f $(INSTALLDIR_BIN)/$(LIBNAME)
 endif
 	rm -f $(addprefix $(INSTALLDIR_BIN)/$(PROG_PREFIX),$(PROGS))
 	rm -f $(INSTALLDIR_BIN)/$(PROG_PREFIX)[

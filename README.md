@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD033 MD041 MD002 -->
 <!-- markdownlint-disable commands-show-output no-duplicate-heading -->
-<!-- spell-checker:ignore markdownlint ; (options) DESTDIR UTILNAME manpages reimplementation oranda libclang -->
+<!-- spell-checker:ignore markdownlint ; (options) DESTDIR UTILNAME dylib manpages reimplementation oranda libclang -->
 <div class="oranda-hide">
 <div align="center">
 
@@ -144,6 +144,22 @@ build selected individual utilities, use the `--package` [aka `-p`] option. For 
 cargo build -p uu_base32 -p uu_cat -p uu_echo -p uu_rm
 ```
 
+The multicall code can also be built as a dynamic library, and the multicall
+binary turned into a minimal shim to load it:
+
+```shell
+cargo rustc --release --features dynamic,unix --lib --crate-type dylib
+cargo build --release --features dynamic
+```
+
+Note that the shim multicall binary will not function unless the library is
+accessible in one of the dynamic loader's search paths—either a default library
+search path, or a modified environment. For example, on Linux:
+
+```shell
+LD_LIBRARY_PATH=$(pwd)/target/release/ ./target/release/coreutils
+```
+
 ### GNU Make
 
 Building using `make` is a simple process as well.
@@ -234,6 +250,19 @@ Set install parent directory (default value is /usr/local):
 make PREFIX=/my/path install
 ```
 
+The dynamically liked multicall library and binary can be installed instead.
+Note, however, that while the standard local `/usr/local/bin` path for binaries
+is typically in the default `PATH` environment variable, the standard local
+`/usr/local/lib` path for libraries is typically *not* in the default library
+search paths. If you do not address this in a persistent manner, then do a
+default dynamic install, your system will likely to fail to fully boot. With
+that in mind, to install the dynamically linked library and shim multicall
+binary:
+
+```shell
+make MULTICALL=y DYNAMIC=y install
+```
+
 Installing with `make` installs shell completions for all installed utilities
 for `bash`, `fish` and `zsh`. Completions for `elvish` and `powershell` can also
 be generated; See `Manually install shell completions`.
@@ -317,6 +346,12 @@ To uninstall the multicall binary:
 
 ```shell
 make MULTICALL=y uninstall
+```
+
+Similarly, for the dynamically linked library and binary:
+
+```shell
+make MULTICALL=y DYNAMIC=y uninstall
 ```
 
 To uninstall from a custom parent directory:

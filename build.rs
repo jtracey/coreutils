@@ -3,7 +3,7 @@
 // For the full copyright and license information, please view the LICENSE
 // file that was distributed with this source code.
 
-// spell-checker:ignore (vars) krate mangen tldr
+// spell-checker:ignore (vars) krate mangen tldr libloading
 
 use std::env;
 use std::fs::File;
@@ -45,11 +45,11 @@ pub fn main() {
             #[allow(clippy::match_same_arms)]
             match krate.as_ref() {
                 "default" | "macos" | "unix" | "windows" | "selinux" | "zip" | "clap_complete"
-                | "clap_mangen" | "fluent_syntax" => continue, // common/standard feature names
+                | "clap_mangen" | "fluent_syntax" | "libloading" => continue, // common/standard feature names
                 "nightly" | "test_unimplemented" | "expensive_tests" | "test_risky_names" => {
                     continue;
                 } // crate-local custom features
-                "uudoc" => continue, // is not a utility
+                "uudoc" | "dynamic" => continue, // is not a utility
                 "test" => continue, // over-ridden with 'uu_test' to avoid collision with rust core crate 'test'
                 s if s.starts_with(FEATURE_PREFIX) => continue, // crate feature sets
                 _ => {}             // util feature name

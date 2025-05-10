@@ -1,7 +1,7 @@
 # coreutils (uutils)
 # * see the repository LICENSE, README, and CONTRIBUTING files for more information
 
-# spell-checker:ignore (libs) ahash bigdecimal datetime serde gethostid kqueue libselinux mangen memmap uuhelp startswith constness expl unnested logind cfgs interner
+# spell-checker:ignore (libs) bigdecimal datetime serde bincode gethostid kqueue libselinux libloading mangen memmap procfs uuhelp startswith constness expl
 
 [package]
 name = "coreutils"
@@ -32,6 +32,8 @@ expensive_tests = []
 test_risky_names = []
 # * only build `uudoc` when `--feature uudoc` is activated
 uudoc = ["dep:clap_complete", "dep:clap_mangen", "dep:fluent-syntax", "dep:zip"]
+# * only build `coreutils` with dynamic loading when `--feature dynamic` is activated
+dynamic = ["libloading"]
 ## features
 ## Optional feature for stdbuf
 # "feat_external_libstdbuf" == use an external libstdbuf.so for stdbuf instead of embedding it
@@ -348,6 +350,7 @@ itoa = "1.0.15"
 jiff = "0.2.18"
 jiff-icu = "0.2.2"
 libc = "0.2.172"
+libloading = "0.9.0"
 lscolors = { version = "0.21.0", default-features = false, features = [
   "gnu_legacy",
 ] }
@@ -422,6 +425,7 @@ clap_mangen = { workspace = true, optional = true }
 clap.workspace = true
 fluent-syntax = { workspace = true, optional = true }
 itertools.workspace = true
+libloading = { workspace = true, optional = true }
 phf.workspace = true
 selinux = { workspace = true, optional = true }
 textwrap.workspace = true
@@ -595,6 +599,10 @@ phf_codegen.workspace = true
 name = "coreutils"
 path = "src/bin/coreutils.rs"
 
+[lib]
+name = "coreutils"
+path = "src/lib.rs"
+
 [[bin]]
 name = "uudoc"
 path = "src/bin/uudoc.rs"
@@ -668,11 +676,11 @@ large_stack_arrays = "allow"                 # 20
 needless_pass_by_value = "allow"             # 16
 float_cmp = "allow"                          # 12
 items_after_statements = "allow"             # 11
-return_self_not_must_use = "allow"           # 8
-inline_always = "allow"                      # 6
-fn_params_excessive_bools = "allow"          # 6
+return_self_not_must_use = "allow" # 8
+inline_always = "allow"      # 6
+fn_params_excessive_bools = "allow" # 6
 used_underscore_items = "allow"              # 2
-should_panic_without_expect = "allow"        # 2
+should_panic_without_expect = "allow" # 2
 
 doc_markdown = "allow"
 unused_self = "allow"
